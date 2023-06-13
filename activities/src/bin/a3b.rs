@@ -9,4 +9,20 @@
 // * Use an if..else if..else block to determine which message to display
 // * Use the println macro to display messages to the terminal
 
-fn main() {}
+fn fizz_buzz_calculator(number: i32) {
+  if number > 5 {
+    println!(">5");
+  } else if number == 5 {
+    println!("=5");
+  } else {
+    println!("<5");
+  }
+}
+fn main() {
+  let bigger: i32 = 6;
+  let equal: i32 = 5;
+  let smaller: i32 = 4;
+  fizz_buzz_calculator(bigger);
+  fizz_buzz_calculator(equal);
+  fizz_buzz_calculator(smaller);
+}

@@ -10,4 +10,15 @@
 // * Use an if..else block to determine which message to display
 // * Use the println macro to display messages to the terminal
 
-fn main() {}
+fn are_you_sexy(answer: bool) {
+  if answer {
+    println!("You are sexy ;)");
+  } else {
+    println!("Nah you an ugly mofo :P");
+  }
+}
+
+fn main() {
+  let is_sexy: bool = true;
+  are_you_sexy(is_sexy);
+}
