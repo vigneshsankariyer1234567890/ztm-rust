@@ -9,5 +9,9 @@
 // * Use an iterator chain to accomplish the task.
 
 fn main() {
-    let data = vec![1, 2, 3, 4, 5];
+    vec![1, 2, 3, 4, 5]
+      .iter()
+      .map(|i| i*3)
+      .filter(|i| i > &10)
+      .for_each(|x| println!("Element is {:?}", x));
 }

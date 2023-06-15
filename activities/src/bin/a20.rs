@@ -22,5 +22,59 @@
 // * Use a match expression to convert the user input into the power state enum
 // * The program should be case-insensitive (the user should be able to type
 //   Reboot, reboot, REBOOT, etc.)
+use std::io::stdin;
 
-fn main() {}
+#[derive(Debug, Clone, Copy)]
+enum PowerOption {
+  Off,
+  Sleep,
+  Reboot,
+  Shutdown,
+  Hibernate,
+  Invalid,
+}
+
+fn get_message(option: PowerOption) -> String {
+  match option {
+    PowerOption::Off => "switching off".to_owned(),
+    PowerOption::Sleep => "sleeping now".to_owned(),
+    PowerOption::Reboot => "rebooting computer".to_owned(),
+    PowerOption::Shutdown => "shutting down".to_owned(),
+    PowerOption::Hibernate => "hibernating".to_owned(),
+    PowerOption::Invalid => "Error: Invalid Option".to_owned(),
+  }
+}
+
+fn get_power_option(option_as_string: String) -> PowerOption {
+  match option_as_string.as_str() {
+    "off" => PowerOption::Off,
+    "sleep" => PowerOption::Sleep,
+    "reboot" => PowerOption::Reboot,
+    "shutdown" => PowerOption::Shutdown,
+    "hibernate" => PowerOption::Hibernate,
+    _ => PowerOption::Invalid,
+  }
+}
+
+
+fn main() {
+  let mut input = String::new();
+
+  println!("Enter your command:");
+
+  stdin().read_line(&mut input)
+    .expect("Failed to read line");
+
+  println!("{}", input);
+
+  let result = Option::Some(input)
+    .map(|input| input.to_lowercase())
+    .map(|lowercased| lowercased.trim().to_owned())
+    .map(|sanitised_input| get_power_option(sanitised_input))
+    .map(|power_option| get_message(power_option));
+
+  match result {
+    Some(res) => println!("Here is your command action: {:?}", res),
+    None => println!("Something went wrong")
+  }
+}
