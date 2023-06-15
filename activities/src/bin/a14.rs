@@ -11,4 +11,59 @@
 // * Use an if expression to determine which person's info should be printed
 // * The name and colors should be printed using a function
 
-fn main() {}
+enum Color {
+  Red,
+  Blue,
+  Green,
+}
+
+impl Color {
+  fn print(&self) {
+    match self {
+      Color::Blue => println!("Blue"),
+      Color::Red => println!("Red"),
+      Color::Green => println!("Green"),
+    };
+  }
+}
+
+struct Person {
+  age: i32,
+  name: String,
+  color: Color,
+}
+
+impl Person {
+  fn print(&self) {
+    println!("Person's name is {:?}", self.name);
+    println!("Person's age is {:?}", self.age);
+    self.color.print();
+  }
+}
+
+fn main() {
+  let people = vec![
+    Person {
+      age: 24,
+      name: "Vignesh".to_owned(),
+      color: Color::Blue,
+    },
+    Person {
+      age: 23,
+      name: String::from("Shreya"),
+      color: Color::Red,
+    },
+    Person {
+      age: 56,
+      name: "Sankar".to_owned(),
+      color: Color::Green,
+    }
+  ];
+
+  for person in &people {
+    if person.age > 23 {
+      person.print();
+    }
+  }
+
+}

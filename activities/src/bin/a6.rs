@@ -10,4 +10,14 @@
 // * Print the variable within the while loop
 // * Do not use break to exit the loop
 
-fn main() {}
+fn main() {
+  let mut countdown = 5;
+
+  while countdown > 0 {
+    println!("{:?}", countdown);
+
+    countdown = countdown - 1;
+  }
+
+  println!("done!");
+}

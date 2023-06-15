@@ -9,4 +9,16 @@
 // * Print the variable within the loop statement
 // * Use break to exit the loop
 
-fn main() {}
+fn main() {
+  let mut i = 1;
+
+  loop {
+    if i > 4 {
+      break;
+    }
+
+    println!("{:?}", i);
+
+    i = i + 1;
+  }
+}
