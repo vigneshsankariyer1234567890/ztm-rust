@@ -28,5 +28,13 @@
 //   the functionality for that menu in isolation.
 // * A vector is the easiest way to store the bills at stage 1, but a
 //   hashmap will be easier to work with at stages 2 and 3.
+use vig::bills::bill_manager::BillManager;
+fn main() {
+  let mut option_bill_manager = BillManager::new();
 
-fn main() {}
+  option_bill_manager.as_mut().map(|bm| bm.print_welcome_message());
+  
+  loop {
+    
+  }
+}
