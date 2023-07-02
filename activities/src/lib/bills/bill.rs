@@ -2,9 +2,9 @@ use std::fmt;
 
 #[derive(Clone)]
 pub struct Bill {
-  name: String,
-  amount_in_dollars: i32,
-  amount_in_cents: i32,
+  pub(crate) name: String,
+  pub(crate) amount_in_dollars: i32,
+  pub(crate) amount_in_cents: i32,
 }
 
 impl Bill {

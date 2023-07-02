@@ -1,4 +1,4 @@
-use super::command_type::{Command, CommandType};
+use super::command_type::{Command, CommandType, ExecutableCommand};
 use crate::bills::bill_manager::BillManager;
 
 pub struct ViewCommand {
@@ -20,17 +20,6 @@ impl ViewCommand {
 }
 
 impl Command for ViewCommand {
-  fn execute(&self, bill_manager: BillManager) -> Option<BillManager> {
-    let name = self.id;
-
-    println!("Looking for bills...");
-
-    match name {
-      Some(id) => bill_manager.view_bill(&id),
-      None => bill_manager.view_bills(),
-    }
-  }
-
   fn get_info(&self) -> String {
     "View your bill(s)".to_owned()
   }
@@ -41,5 +30,22 @@ impl Command for ViewCommand {
 
   fn get_command_word(&self) -> String {
     CommandType::View.as_str().to_owned()
+  }
+
+  fn get_command_type(&self) -> CommandType {
+    self.command_type.clone()
+  }
+}
+
+impl ExecutableCommand for ViewCommand {
+  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager> {
+    let name = self.id.clone();
+
+    println!("Looking for bills...");
+
+    match name {
+      Some(id) => bill_manager.view_bill(&id),
+      None => bill_manager.view_bills(),
+    }
   }
 }

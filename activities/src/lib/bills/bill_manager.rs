@@ -79,7 +79,7 @@ impl BillManager {
     let found_bill = self.bill_collection.get(name);
 
     match found_bill {
-      Some(bill) => println!("Found bill {:?}...", found_bill),
+      Some(_bill) => println!("Found bill {:?}...", found_bill),
       None => println!("Didn't find any such bill."),
     };
 

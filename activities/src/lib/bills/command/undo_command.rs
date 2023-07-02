@@ -1,0 +1,39 @@
+use super::command_type::{Command, CrudCommand, CommandType, TimeTravelCommand};
+
+pub struct UndoCommand {
+  command_to_undo: Box<dyn CrudCommand>,
+  command_type: CommandType
+}
+
+impl UndoCommand {
+  pub fn of(command_to_undo: Box<dyn CrudCommand>) -> Self {
+    UndoCommand {
+      command_to_undo,
+      command_type: CommandType::Undo
+    }
+  }
+}
+
+impl Command for UndoCommand {
+  fn get_info(&self) -> String {
+    "Undo your last command".to_owned()
+  }
+
+  fn get_command_args(&self) -> String {
+    "".to_owned()
+  }
+
+  fn get_command_word(&self) -> String {
+    CommandType::Undo.as_str().to_owned()
+  }
+
+  fn get_command_type(&self) -> CommandType {
+    self.command_type.clone()
+  }
+}
+
+impl TimeTravelCommand for UndoCommand {
+  fn generate_new_crud_command(&self) -> Box<dyn CrudCommand> {
+    self.command_to_undo.get_inverse()
+  }
+}

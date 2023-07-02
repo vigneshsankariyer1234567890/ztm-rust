@@ -1,4 +1,4 @@
-use super::command_type::{Command, CommandType};
+use super::command_type::{Command, CommandType, ExecutableCommand};
 use super::add_command::AddCommand;
 use super::edit_command::EditCommand;
 use super::remove_command::RemoveCommand;
@@ -47,12 +47,6 @@ impl HelpCommand {
 }
 
 impl Command for HelpCommand {
-  fn execute(&self, bill_manager: BillManager) -> Option<BillManager> {
-    HelpCommand::print_command_list();
-    
-    BillManager::of(bill_manager.get_bill_collection()?)
-  }
-
   fn get_info(&self) -> String {
     "Get help on the commands".to_owned()
   }
@@ -63,5 +57,17 @@ impl Command for HelpCommand {
 
   fn get_command_word(&self) -> String {
     CommandType::Help.as_str().to_owned()
+  }
+
+  fn get_command_type(&self) -> CommandType {
+    self.command_type
+  }
+}
+
+impl ExecutableCommand for HelpCommand {
+  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager> {
+    HelpCommand::print_command_list();
+    
+    BillManager::of(bill_manager.get_bill_collection()?)
   }
 }
