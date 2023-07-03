@@ -1,6 +1,7 @@
 use super::command_type::{Command, CommandType, ExecutableCommand};
 use crate::bills::bill_manager::BillManager;
 
+#[derive(Clone)]
 pub struct ViewCommand {
   id: Option<String>,
   command_type: CommandType,
@@ -34,6 +35,10 @@ impl Command for ViewCommand {
 
   fn get_command_type(&self) -> CommandType {
     self.command_type.clone()
+  }
+
+  fn as_executable_command(&self) -> Option<Box<dyn ExecutableCommand>> {
+    Some(Box::new(self.clone()))
   }
 }
 

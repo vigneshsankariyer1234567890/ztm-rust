@@ -52,6 +52,10 @@ impl Command for EditCommand {
   fn as_crud_command(&self) -> Option<Box<dyn CrudCommand>> {
     Some(Box::new(self.clone()))
   }
+
+  fn as_executable_command(&self) -> Option<Box<dyn ExecutableCommand>> {
+    Some(Box::new(self.clone()))
+  }
 }
 
 impl ExecutableCommand for EditCommand {

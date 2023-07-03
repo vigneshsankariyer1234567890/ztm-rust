@@ -1,5 +1,6 @@
 use super::command_type::{Command, CrudCommand, CommandType, TimeTravelCommand};
 
+#[derive(Clone)]
 pub struct RedoCommand {
   command_to_redo: Box<dyn CrudCommand>,
   command_type: CommandType
@@ -29,6 +30,10 @@ impl Command for RedoCommand {
 
   fn get_command_type(&self) -> CommandType {
     self.command_type
+  }
+
+  fn as_time_travel_command(&self) -> Option<Box<dyn TimeTravelCommand>> {
+    Some(Box::new(self.clone()))
   }
 }
 

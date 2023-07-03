@@ -53,6 +53,14 @@ pub trait Command {
   fn as_crud_command(&self) -> Option<Box<dyn CrudCommand>> {
     None
   }
+
+  fn as_executable_command(&self) -> Option<Box<dyn ExecutableCommand>> {
+    None
+  }
+
+  fn as_time_travel_command(&self) -> Option<Box<dyn TimeTravelCommand>> {
+    None
+  }
 }
 
 pub trait ExecutableCommand: Command {

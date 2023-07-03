@@ -5,7 +5,7 @@ use super::remove_command::RemoveCommand;
 use super::view_command::ViewCommand;
 use crate::bills::bill_manager::BillManager;
 
-
+#[derive(Clone)]
 pub struct HelpCommand {
   command_type: CommandType,
 }
@@ -61,6 +61,10 @@ impl Command for HelpCommand {
 
   fn get_command_type(&self) -> CommandType {
     self.command_type
+  }
+
+  fn as_executable_command(&self) -> Option<Box<dyn ExecutableCommand>> {
+    Some(Box::new(self.clone()))
   }
 }
 

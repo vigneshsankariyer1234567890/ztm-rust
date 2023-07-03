@@ -1,5 +1,6 @@
 use super::command_type::{Command, CrudCommand, CommandType, TimeTravelCommand};
 
+#[derive(Clone)]
 pub struct UndoCommand {
   command_to_undo: Box<dyn CrudCommand>,
   command_type: CommandType
@@ -29,6 +30,10 @@ impl Command for UndoCommand {
 
   fn get_command_type(&self) -> CommandType {
     self.command_type.clone()
+  }
+
+  fn as_time_travel_command(&self) -> Option<Box<dyn TimeTravelCommand>> {
+    Some(Box::new(self.clone()))
   }
 }
 
