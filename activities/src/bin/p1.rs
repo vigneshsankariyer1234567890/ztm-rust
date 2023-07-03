@@ -44,7 +44,7 @@ fn main() {
 
   let mut welcome_command = CommandManager::generate_welcome_message_command();
 
-  command_manager.execute_command( &mut welcome_command);
+  let _ = command_manager.execute_command( &mut welcome_command);
   
   loop {
     // accept input
@@ -125,7 +125,7 @@ fn complete_undo_or_redo(optional_command: &Option<Box<dyn Command>>, command_ma
       .and_then(|r| {
         let ExecutionResult {
           bill_manager,
-          successful_executable_command,
+          successful_executable_command: _,
         } = r;
 
         command_manager.reset_without_committing(
