@@ -44,6 +44,10 @@ impl Command for RemoveCommand {
     self.command_type.clone()
   }
 
+  fn as_command(&self) -> Box<dyn Command> {
+    Box::new(self.clone())
+  }
+
   fn as_crud_command(&self) -> Option<Box<dyn CrudCommand>> {
     Some(Box::new(self.clone()))
   }
@@ -61,6 +65,10 @@ impl ExecutableCommand for RemoveCommand {
     println!("Removing bill with name {:?}", self.id);
     bill_manager.remove_bill(self.id.as_str())
   }
+
+  fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {
+    Box::new(self.clone())
+  }
 }
 
 impl CrudCommand for RemoveCommand {
@@ -70,7 +78,7 @@ impl CrudCommand for RemoveCommand {
     )
   }
 
-  fn clone_box(&self) -> Box<dyn CrudCommand> {
+  fn clone_boxed_crud(&self) -> Box<dyn CrudCommand> {
     Box::new(self.clone())
   }
 }

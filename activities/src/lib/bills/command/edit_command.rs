@@ -49,6 +49,10 @@ impl Command for EditCommand {
     self.command_type
   }
 
+  fn as_command(&self) -> Box<dyn Command> {
+    Box::new(self.clone())
+  }
+
   fn as_crud_command(&self) -> Option<Box<dyn CrudCommand>> {
     Some(Box::new(self.clone()))
   }
@@ -68,6 +72,10 @@ impl ExecutableCommand for EditCommand {
     println!("Editing bill {:?} if exists...", &bill);
     bill_manager.edit_bill(&bill)
   }
+
+  fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {
+    Box::new(self.clone())
+  }
 }
 
 impl CrudCommand for EditCommand {
@@ -78,7 +86,7 @@ impl CrudCommand for EditCommand {
     )
   }
 
-  fn clone_box(&self) -> Box<dyn CrudCommand> {
+  fn clone_boxed_crud(&self) -> Box<dyn CrudCommand> {
     Box::new(self.clone())
   }
 }

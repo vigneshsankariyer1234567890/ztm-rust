@@ -7,3 +7,4 @@ pub mod undo_command;
 pub mod redo_command;
 pub mod help_command;
 pub mod exit_command;
+pub mod welcome_message_command;

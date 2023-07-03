@@ -63,6 +63,10 @@ impl Command for HelpCommand {
     self.command_type
   }
 
+  fn as_command(&self) -> Box<dyn Command> {
+    Box::new(self.clone())
+  }
+
   fn as_executable_command(&self) -> Option<Box<dyn ExecutableCommand>> {
     Some(Box::new(self.clone()))
   }
@@ -73,5 +77,9 @@ impl ExecutableCommand for HelpCommand {
     HelpCommand::print_command_list();
     
     BillManager::of(bill_manager.get_bill_collection()?)
+  }
+
+  fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {
+    Box::new(self.clone())
   }
 }

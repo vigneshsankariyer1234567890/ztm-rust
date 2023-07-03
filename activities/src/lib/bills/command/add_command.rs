@@ -43,6 +43,10 @@ impl Command for AddCommand {
     self.command_type
   }
 
+  fn as_command(&self) -> Box<dyn Command> {
+    Box::new(self.clone())
+  }
+
   fn as_crud_command(&self) -> Option<Box<dyn CrudCommand>> {
     Some(Box::new(self.clone()))
   }
@@ -58,6 +62,10 @@ impl ExecutableCommand for AddCommand {
     println!("Adding bill {:?}...", &bill);
     bill_manager.add_bill(&bill)
   }
+
+  fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {
+    Box::new(self.clone())
+  }
 }
 
 impl CrudCommand for AddCommand {
@@ -69,7 +77,7 @@ impl CrudCommand for AddCommand {
     )
   }
 
-  fn clone_box(&self) -> Box<dyn CrudCommand> {
+  fn clone_boxed_crud(&self) -> Box<dyn CrudCommand> {
     Box::new(self.clone())
   }
 }

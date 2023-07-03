@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use super::bill::Bill;
 
+#[derive(Clone)]
 pub struct BillManager {
   bill_collection: HashMap<String, Bill>,
 }

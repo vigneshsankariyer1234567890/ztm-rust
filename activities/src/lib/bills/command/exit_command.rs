@@ -1,5 +1,6 @@
 use super::command_type::{Command, CommandType};
 
+#[derive(Clone)]
 pub struct ExitCommand {
   command_type: CommandType
 }
@@ -27,5 +28,9 @@ impl Command for ExitCommand {
 
   fn get_command_type(&self) -> CommandType {
     self.command_type.clone()
+  }
+
+  fn as_command(&self) -> Box<dyn Command> {
+    Box::new(self.clone())
   }
 }
