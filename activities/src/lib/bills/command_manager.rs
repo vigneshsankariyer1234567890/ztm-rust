@@ -109,6 +109,7 @@ impl CommandManager {
     boxed_command: &Box<dyn ExecutableCommand>,
     new_command_pointer: usize
   ) -> Result<String, String>{
+    println!("pointer value given: {:?}\n\n", new_command_pointer);
     if new_command_pointer > self.command_stack.len() + 1 {
       return Err("Unable to save results\n".to_string());
     }
@@ -119,7 +120,8 @@ impl CommandManager {
 
     self.bill_manager = optional_bill_manager.unwrap();
 
-    self.command_stack.truncate(new_command_pointer as usize);
+    // one-indexed
+    self.command_stack.truncate(new_command_pointer - 1);
 
     // push the new command to the stack
     self.command_stack.push(boxed_command.as_command());

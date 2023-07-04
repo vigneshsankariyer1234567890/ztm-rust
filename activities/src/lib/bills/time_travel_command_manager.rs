@@ -31,9 +31,9 @@ fn generate_undo_command(command_pointer: usize, command_stack: &Vec<Box<dyn Com
 }
 
 fn generate_redo_command(command_pointer: usize, command_stack: &Vec<Box<dyn Command>>) -> Result<Box<dyn Command>, String> {
-  if command_pointer > command_stack.len() {
+  if command_pointer >= command_stack.len() {
     // pointing to latest element, no more elements
-    return Err("Couldn't complete Redo action, at latest version.".to_owned());
+    return Err("No redoable action found, at latest version.".to_owned());
   }
 
   // look for first command from command_pointer to command_stack.len() which is a crud command
@@ -49,7 +49,7 @@ fn generate_redo_command(command_pointer: usize, command_stack: &Vec<Box<dyn Com
       "Couldn't complete Redo action, something went wrong".to_string()
     ),
     Some((command, i)) => Ok(
-      Box::new(RedoCommand::of(command, i + command_pointer + 1))
+      Box::new(RedoCommand::of(command, i + command_pointer))
     )
   }
 }
