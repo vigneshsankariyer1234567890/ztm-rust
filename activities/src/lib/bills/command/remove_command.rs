@@ -1,7 +1,7 @@
-use super::command_type::{Command, CommandType, CrudCommand, ExecutableCommand};
+use super::command_type::{Command, CommandType, CrudCommand, ExecutableCommand, ExecutionResult};
 use super::add_command::AddCommand;
 use crate::bills::{bill_manager::BillManager, bill::Bill};
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct RemoveCommand {
   id: String,
   command_type: CommandType,
@@ -58,12 +58,29 @@ impl Command for RemoveCommand {
 }
 
 impl ExecutableCommand for RemoveCommand {
-  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager> {
-    let bill_collection = bill_manager.get_bill_collection()?;
-    let bill = bill_collection.get(self.id.as_str())?;
-    self.clone().with_bill(bill.clone());
-    println!("Removing bill with name {:?}", self.id);
-    bill_manager.remove_bill(self.id.as_str())
+  fn execute(&self, bill_manager: BillManager) -> ExecutionResult {
+    let result = bill_manager.remove_bill(&self.id);
+
+    if result.is_none() {
+      return ExecutionResult {
+        bill_manager: None,
+        successful_executable_command: self.clone_boxed_executable()
+      };
+    }
+
+    let (
+      new_bill_manager,
+      previous_bill
+    ) = result.unwrap();
+
+    let new_command = self
+      .with_possibly_previous_bill(Some(previous_bill))
+      .clone_boxed_executable();
+
+    ExecutionResult {
+      bill_manager: Some(new_bill_manager),
+      successful_executable_command: new_command
+    }
   }
 
   fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {
@@ -80,5 +97,12 @@ impl CrudCommand for RemoveCommand {
 
   fn clone_boxed_crud(&self) -> Box<dyn CrudCommand> {
     Box::new(self.clone())
+  }
+
+  fn with_possibly_previous_bill(&self, optional_bill: Option<Bill>) -> Box<dyn CrudCommand> {
+    match optional_bill {
+      None => Box::new(self.clone()),
+      Some(bill) => Box::new(self.clone().with_bill(bill))
+    }
   }
 }

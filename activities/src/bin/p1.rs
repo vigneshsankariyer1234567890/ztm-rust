@@ -1,4 +1,4 @@
-use std::io::stdin;
+use std::io::{self, Write};
 
 // Project 1: Interactive bill manager
 //
@@ -36,9 +36,7 @@ use vig::bills::command_manager::CommandManager;
 
 fn main() {
   let mut command_manager = CommandManager::of(
-    Some(
-      BillManager::new()
-    ),
+    BillManager::new(),
     Vec::new(),
   );
 
@@ -48,40 +46,47 @@ fn main() {
   
   loop {
     // accept input
-    println!("Please enter your command");
-
+    println!("Current command manager state:\n{:?}\n", command_manager);
     let mut input = String::new();
+
+    println!("Please enter your command\n");
+
+    io::stdout().flush().unwrap(); 
     
-    stdin().read_line(&mut input)
-      .expect("Failed to read line");
+    io::stdin().read_line(&mut input)
+      .expect("Failed to read line\n");
+
+    let input = input.trim();
 
     // parse to command
     let optional_command = command_manager.generate_command(&input);
 
     // check if exit
-    match optional_command.as_ref().map(|c| c.get_command_type()) {
-      None => {
-        println!("No such command exists, please try again");
+    match optional_command {
+      Err(msg) => {
+        println!("Error received: {:?}\n", msg);
         continue;
       },
-      Some(CommandType::Exit) => {
-        break;
-      },
-      Some(CommandType::Undo) | Some(CommandType::Redo) => complete_undo_or_redo(&optional_command, &mut command_manager),
-      _ => complete_executable_actions(&optional_command, &mut command_manager),
+      Ok(command) => {
+        println!("Your command is {:?}\n", &command);
+        match command.get_command_type() {
+          CommandType::Exit => break,
+          CommandType::Undo | CommandType::Redo => complete_undo_or_redo(&command, &mut command_manager),
+          _ => complete_executable_actions(&command, &mut command_manager)
+        }
+      }
     };
   }
 
   // exit and say bye over here
-  println!("Thanks for using BillManager! Bye!");
+  println!("Thanks for using BillManager! Bye!\n");
   std::process::exit(0);
 }
 
-fn complete_executable_actions(optional_command: &Option<Box<dyn Command>>, command_manager: &mut CommandManager) {
+fn complete_executable_actions(optional_command: &Box<dyn Command>, command_manager: &mut CommandManager) {
     // if not undo or redo, execute and commit results
     let command = optional_command
-      .as_ref()
-      .and_then(|c| c.as_executable_command());
+      .as_executable_command();
 
     let mut executable = command.unwrap().clone_boxed_executable();
 
@@ -90,38 +95,36 @@ fn complete_executable_actions(optional_command: &Option<Box<dyn Command>>, comm
       .and_then(|r| {
         let ExecutionResult {
           bill_manager,
-          mut successful_executable_command,
+          successful_executable_command,
         } = r;
 
         command_manager.commit_results(
           bill_manager,
-          &mut successful_executable_command,
+          &successful_executable_command,
           command_manager.command_pointer + 1
         )
       });
 
     match result {
       Ok(_r) => (),
-      Err(msg) => println!("Error occured: {:?}", msg)
+      Err(msg) => println!("Error occured: {:?}\n", msg)
     }
 }
 
-fn complete_undo_or_redo(optional_command: &Option<Box<dyn Command>>, command_manager: &mut CommandManager) {
-    let pointer = optional_command
-      .as_ref()
-      .and_then(|c| c.as_time_travel_command())
+fn complete_undo_or_redo(command: &Box<dyn Command>, command_manager: &mut CommandManager) {
+    let pointer = command
+      .as_time_travel_command()
       .map(|c| c.get_new_position_of_command())
       .unwrap();
 
-    let mut executable = optional_command
-      .as_ref()
-      .and_then(|c| c.as_time_travel_command())
+    let executable = command
+      .as_time_travel_command()
       .map(|c| c.generate_new_crud_command())
       .and_then(|c| c.as_executable_command())
       .unwrap();
 
     let result = command_manager
-      .execute_command(&mut executable)
+      .execute_command(&executable)
       .and_then(|r| {
         let ExecutionResult {
           bill_manager,
@@ -136,6 +139,6 @@ fn complete_undo_or_redo(optional_command: &Option<Box<dyn Command>>, command_ma
         
     match result {
       Ok(_r) => (),
-      Err(msg) => println!("Error occured: {:?}", msg)
+      Err(msg) => println!("Error occured: {:?}\n", msg)
     }
 }

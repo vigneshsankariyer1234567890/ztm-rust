@@ -1,11 +1,14 @@
-use super::command_type::{Command, CommandType, ExecutableCommand};
+use super::command_type::{Command, CommandType, ExecutableCommand, ExecutionResult};
 use super::add_command::AddCommand;
 use super::edit_command::EditCommand;
 use super::remove_command::RemoveCommand;
 use super::view_command::ViewCommand;
 use crate::bills::bill_manager::BillManager;
+use crate::bills::command::exit_command::ExitCommand;
+use crate::bills::command::redo_command::RedoCommand;
+use crate::bills::command::undo_command::UndoCommand;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct HelpCommand {
   command_type: CommandType,
 }
@@ -28,6 +31,9 @@ impl HelpCommand {
       Box::new(HelpCommand::get_dummy_command()),
       Box::new(RemoveCommand::get_dummy_command()),
       Box::new(ViewCommand::get_dummy_command()),
+      Box::new(UndoCommand::get_dummy_command()),
+      Box::new(RedoCommand::get_dummy_command()),
+      Box::new(ExitCommand::get_dummy_command()),
     ];
 
     println!("{:<10} {:<30} {:<15}", "Command", "Description", "Usage");
@@ -41,7 +47,7 @@ impl HelpCommand {
       .collect();
 
     for tuple in mapped {
-      println!("{:<10} {:<30} {:<15}", tuple.0, tuple.1, tuple.2);
+      println!("{:<10} {:<30} {:<15}\n", tuple.0, tuple.1, tuple.2);
     }
   }
 }
@@ -73,10 +79,22 @@ impl Command for HelpCommand {
 }
 
 impl ExecutableCommand for HelpCommand {
-  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager> {
+  fn execute(&self, bill_manager: BillManager) -> ExecutionResult {
     HelpCommand::print_command_list();
-    
-    BillManager::of(bill_manager.get_bill_collection()?)
+
+    let bill_collection = bill_manager.get_bill_collection();
+
+    if bill_collection.is_none() {
+      return ExecutionResult {
+        bill_manager: None,
+        successful_executable_command: self.as_executable_command().unwrap()
+      }
+    }
+
+    ExecutionResult {
+      bill_manager: BillManager::of(bill_collection.unwrap()),
+      successful_executable_command: self.as_executable_command().unwrap()
+    }
   }
 
   fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {

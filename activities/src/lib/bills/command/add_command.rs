@@ -1,9 +1,9 @@
-use super::command_type::{Command, CommandType, CrudCommand, ExecutableCommand};
+use super::command_type::{Command, CommandType, CrudCommand, ExecutableCommand, ExecutionResult};
 use super::remove_command::RemoveCommand;
 use crate::bills::bill::Bill;
 use crate::bills::bill_manager::BillManager;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct AddCommand {
   bill: Bill,
   command_type: CommandType
@@ -57,10 +57,13 @@ impl Command for AddCommand {
 }
 
 impl ExecutableCommand for AddCommand {
-  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager> {
+  fn execute(&self, bill_manager: BillManager) -> ExecutionResult {
     let bill = self.bill.clone();
     println!("Adding bill {:?}...", &bill);
-    bill_manager.add_bill(&bill)
+    ExecutionResult {
+      bill_manager: bill_manager.add_bill(&bill),
+      successful_executable_command: self.clone_boxed_executable()
+    }
   }
 
   fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {
@@ -78,6 +81,10 @@ impl CrudCommand for AddCommand {
   }
 
   fn clone_boxed_crud(&self) -> Box<dyn CrudCommand> {
+    Box::new(self.clone())
+  }
+
+  fn with_possibly_previous_bill(&self, _optional_bill: Option<Bill>) -> Box<dyn CrudCommand> {
     Box::new(self.clone())
   }
 }

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use super::bill::Bill;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BillManager {
   bill_collection: HashMap<String, Bill>,
 }
@@ -35,36 +35,35 @@ impl BillManager {
     BillManager::of(bill_collection)
   }
 
-  pub fn remove_bill(&self, name: &str) -> Option<Self> {
+  pub fn remove_bill(&self, name: &str) -> Option<(Self, Bill)> {
     let mut bill_collection = self.get_bill_collection()?;
 
-    if !bill_collection.contains_key(name) {
-      return None;
-    }
+    let removed_bill = bill_collection.remove(name)?;
 
-    let bill = bill_collection.remove(name)?;
+    println!("Removed bill: {:?}", removed_bill);
 
-    println!("Removed bill: {:?}", bill);
-
-    BillManager::of(bill_collection)
+    BillManager::of(bill_collection.clone())
+      .and_then(|bm| Some((bm, removed_bill)))
   }
 
-  pub fn edit_bill(&self, bill: &Bill) -> Option<Self> {
+  pub fn edit_bill(&self, bill: &Bill) -> Option<(Self, Bill)> {
     let mut bill_collection = self.get_bill_collection()?;
 
     let name = bill.get_name();
 
-    if !bill_collection.contains_key(&name) {
-      return None;
-    }
+    println!("Name of bill: {:?}\n", &name);
+    println!("Bill collection: {:?}\n", &bill_collection);
 
     let removed_bill = bill_collection.remove(&name)?;
 
-    let added_bill = bill_collection.insert(name, bill.to_owned())?;
+    println!("Removed bill: {:?}", &removed_bill);
 
-    println!("Edited bill {:?} to this: {:?}", removed_bill, added_bill);
+    bill_collection.insert(name, bill.to_owned());
 
-    BillManager::of(bill_collection)
+    println!("Edited bill {:?} to this: {:?}", &removed_bill, bill);
+
+    BillManager::of(bill_collection.clone())
+      .and_then(|bm| Some((bm, removed_bill)))
   }
 
   pub fn view_bills(&self) -> Option<Self> {

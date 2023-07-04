@@ -1,7 +1,7 @@
-use super::command_type::{Command, CommandType, ExecutableCommand};
+use super::command_type::{Command, CommandType, ExecutableCommand, ExecutionResult};
 use crate::bills::bill_manager::BillManager;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ViewCommand {
   id: Option<String>,
   command_type: CommandType,
@@ -47,14 +47,20 @@ impl Command for ViewCommand {
 }
 
 impl ExecutableCommand for ViewCommand {
-  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager> {
+  fn execute(&self, bill_manager: BillManager) -> ExecutionResult {
     let name = self.id.clone();
 
     println!("Looking for bills...");
 
     match name {
-      Some(id) => bill_manager.view_bill(&id),
-      None => bill_manager.view_bills(),
+      Some(id) => ExecutionResult {
+        bill_manager: bill_manager.view_bill(&id),
+        successful_executable_command: self.clone_boxed_executable()
+      },
+      None => ExecutionResult {
+        bill_manager: bill_manager.view_bills(),
+        successful_executable_command: self.clone_boxed_executable()
+      },
     }
   }
 

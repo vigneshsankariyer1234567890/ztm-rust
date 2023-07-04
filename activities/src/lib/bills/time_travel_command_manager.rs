@@ -3,44 +3,64 @@ use super::command::command_type::{Command, CommandType};
 use super::command::redo_command::RedoCommand;
 use super::command::undo_command::UndoCommand;
 
-fn generate_undo_command(command_pointer: i32, command_stack: &Vec<Box<dyn Command>>) -> Option<Box<dyn Command>> {
-  if command_pointer < 0 {
-    return None;
+fn generate_undo_command(command_pointer: usize, command_stack: &Vec<Box<dyn Command>>) -> Result<Box<dyn Command>, String> {
+  println!("List of commands: {:?}\n", command_stack);
+  println!("Given pointer: {:?}\n", command_pointer);
+
+  if command_pointer == 0 {
+    return Err("Couldn't complete Undo action, at oldest version.".to_string());
   }
 
   // look for first command from command_pointer reversed which is a crud command
-  let (command, i) = command_stack.iter()
+  let optional = command_stack.iter()
     .enumerate()
     .rev()
     .filter(|(index, _value)| *index <= command_pointer.try_into().unwrap())
-    .find_map(|(i, command)| command.as_crud_command().and_then(|c| Some((c, i))))?;
+    .find_map(|(i, command)| command.as_crud_command().and_then(|c| Some((c, i))));
 
-  Some(Box::new(UndoCommand::of(command, i as i32)))
+  println!("found command: {:?}", optional);
+
+  match optional {
+    None => Err(
+      "No undoable command found, please try again".to_string()
+    ),
+    Some((command, i)) => Ok(
+      Box::new(UndoCommand::of(command, i))
+    )
+  }
 }
 
-fn generate_redo_command(command_pointer: i32, command_stack: &Vec<Box<dyn Command>>) -> Option<Box<dyn Command>> {
-  let last_elem_index = command_stack.len() - 1;
-  if command_pointer >= last_elem_index.try_into().unwrap() {
+fn generate_redo_command(command_pointer: usize, command_stack: &Vec<Box<dyn Command>>) -> Result<Box<dyn Command>, String> {
+  if command_pointer > command_stack.len() {
     // pointing to latest element, no more elements
-    return None;
+    return Err("Couldn't complete Redo action, at latest version.".to_owned());
   }
 
   // look for first command from command_pointer to command_stack.len() which is a crud command
-  let (command, i) = command_stack.iter()
+  let optional = command_stack.iter()
     .enumerate()
-    .filter(|(index, _value)| *index > command_pointer.try_into().unwrap())
-    .find_map(|(i, command)| command.as_crud_command().and_then(|c| Some((c, i))))?;
+    .filter(|(index, _value)| *index >= command_pointer)
+    .find_map(|(i, command)| command.as_crud_command().and_then(|c| Some((c, i))));
 
-  Some(Box::new(RedoCommand::of(command, i as i32 + command_pointer)))
+  println!("Command to redo: {:?}\n\n", optional);
+
+  match optional {
+    None => Err(
+      "Couldn't complete Redo action, something went wrong".to_string()
+    ),
+    Some((command, i)) => Ok(
+      Box::new(RedoCommand::of(command, i + command_pointer + 1))
+    )
+  }
 }
 
 pub fn generate_time_travel_command(
   command_type: &CommandType,
-  command_pointer: i32,
-  command_stack: &Vec<Box<dyn Command>>) -> Option<Box<dyn Command>> {
+  command_pointer: usize,
+  command_stack: &Vec<Box<dyn Command>>) -> Result<Box<dyn Command>, String> {
   match command_type {
     CommandType::Undo => generate_undo_command(command_pointer, command_stack),
     CommandType::Redo => generate_redo_command(command_pointer, command_stack),
-    _ => None,
+    _ => Err("Incorrect command type given".to_string()),
   }
 }

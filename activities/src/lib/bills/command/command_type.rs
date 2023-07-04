@@ -1,6 +1,8 @@
-use crate::bills::bill_manager::BillManager;
+use std::fmt::Debug;
 
-#[derive(Clone, Copy)]
+use crate::bills::{bill_manager::BillManager, bill::Bill};
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CommandType {
   Add,
   View,
@@ -43,7 +45,7 @@ impl CommandType {
 }
 }
 
-pub trait Command {
+pub trait Command: Debug {
   fn get_info(&self) -> String;
 
   fn get_command_args(&self) -> String;
@@ -68,7 +70,7 @@ pub trait Command {
 }
 
 pub trait ExecutableCommand: Command {
-  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager>;
+  fn execute(&self, bill_manager: BillManager) -> ExecutionResult;
 
   fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand>;
 }
@@ -82,6 +84,7 @@ impl Clone for Box<dyn ExecutableCommand> {
 pub trait CrudCommand: ExecutableCommand {
   fn get_inverse(&self) -> Box<dyn CrudCommand>;
   fn clone_boxed_crud(&self) -> Box<dyn CrudCommand>;
+  fn with_possibly_previous_bill(&self, optional_bill: Option<Bill>) -> Box<dyn CrudCommand>;
 }
 
 impl Clone for Box<dyn CrudCommand> {
@@ -93,9 +96,10 @@ impl Clone for Box<dyn CrudCommand> {
 pub trait TimeTravelCommand: Command {
   fn generate_new_crud_command(&self) -> Box<dyn CrudCommand>;
 
-  fn get_new_position_of_command(&self) -> i32;
+  fn get_new_position_of_command(&self) -> usize;
 }
 
+#[derive(Debug)]
 pub struct ExecutionResult {
   pub bill_manager: Option<BillManager>,
   pub successful_executable_command: Box<dyn ExecutableCommand>,

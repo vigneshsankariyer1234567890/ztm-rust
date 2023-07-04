@@ -1,7 +1,7 @@
-use super::command_type::{Command, CommandType, ExecutableCommand};
+use super::command_type::{Command, CommandType, ExecutableCommand, ExecutionResult};
 use crate::bills::bill_manager::BillManager;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct WelcomeMessageCommand {
   command_type: CommandType,
 }
@@ -41,8 +41,11 @@ impl Command for WelcomeMessageCommand {
 }
 
 impl ExecutableCommand for WelcomeMessageCommand {
-  fn execute(&mut self, bill_manager: BillManager) -> Option<BillManager> {
-    bill_manager.print_welcome_message()
+  fn execute(&self, bill_manager: BillManager) -> ExecutionResult {
+    ExecutionResult {
+      bill_manager: bill_manager.print_welcome_message(),
+      successful_executable_command: self.clone_boxed_executable()
+    }
   }
 
   fn clone_boxed_executable(&self) -> Box<dyn ExecutableCommand> {

@@ -1,19 +1,26 @@
-use super::command_type::{Command, CrudCommand, CommandType, TimeTravelCommand};
+use super::{command_type::{Command, CrudCommand, CommandType, TimeTravelCommand}, add_command::AddCommand};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct RedoCommand {
   command_to_redo: Box<dyn CrudCommand>,
-  command_position: i32,
+  command_position: usize,
   command_type: CommandType
 }
 
 impl RedoCommand {
-  pub fn of(command_to_redo: Box<dyn CrudCommand>, command_position: i32) -> Self {
+  pub fn of(command_to_redo: Box<dyn CrudCommand>, command_position: usize) -> Self {
     RedoCommand {
       command_to_redo,
       command_position,
       command_type: CommandType::Redo
     }
+  }
+
+  pub fn get_dummy_command() -> Self {
+    Self::of(
+      Box::new(AddCommand::get_dummy_command()),
+      0
+    )
   }
 }
 
@@ -48,7 +55,7 @@ impl TimeTravelCommand for RedoCommand {
     self.command_to_redo.clone_boxed_crud()
   }
 
-  fn get_new_position_of_command(&self) -> i32 {
+  fn get_new_position_of_command(&self) -> usize {
     self.command_position
   }
 }

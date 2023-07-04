@@ -1,19 +1,26 @@
-use super::command_type::{Command, CrudCommand, CommandType, TimeTravelCommand};
+use super::{command_type::{Command, CrudCommand, CommandType, TimeTravelCommand}, add_command::AddCommand};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct UndoCommand {
   command_to_undo: Box<dyn CrudCommand>,
-  command_position: i32,
+  command_position: usize,
   command_type: CommandType
 }
 
 impl UndoCommand {
-  pub fn of(command_to_undo: Box<dyn CrudCommand>, command_position: i32) -> Self {
+  pub fn of(command_to_undo: Box<dyn CrudCommand>, command_position: usize) -> Self {
     UndoCommand {
       command_to_undo,
       command_position,
       command_type: CommandType::Undo
     }
+  }
+
+  pub fn get_dummy_command() -> Self {
+    Self::of(
+      Box::new(AddCommand::get_dummy_command()),
+      0
+    )
   }
 }
 
@@ -48,7 +55,7 @@ impl TimeTravelCommand for UndoCommand {
     self.command_to_undo.get_inverse()
   }
 
-  fn get_new_position_of_command(&self) -> i32 {
+  fn get_new_position_of_command(&self) -> usize {
     self.command_position
   }
 }

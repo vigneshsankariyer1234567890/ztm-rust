@@ -1,6 +1,6 @@
 use super::command_type::{Command, CommandType};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ExitCommand {
   command_type: CommandType
 }
@@ -10,6 +10,10 @@ impl ExitCommand {
     ExitCommand {
       command_type: CommandType::Exit
     }
+  }
+
+  pub fn get_dummy_command() -> Self {
+    Self::of()
   }
 }
 
