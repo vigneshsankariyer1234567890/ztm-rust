@@ -22,8 +22,45 @@
 // * Utilize the `thiserror` crate for your error type
 // * Run `cargo test --bin a37` to test your implementation
 
+use std::{convert::TryFrom, num::ParseIntError};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+enum RgbError {
+  #[error("Unable to convert")]
+  ConversionError(String),
+  #[error("Unable to parse")]
+  ParseError(ParseIntError)
+}
+
+impl From<ParseIntError> for RgbError {
+  fn from(error: ParseIntError) -> Self {
+    RgbError::ParseError(error)
+  }
+}
+
 #[derive(Debug, Eq, PartialEq)]
 struct Rgb(u8, u8, u8);
+
+impl TryFrom<&str> for Rgb {
+  type Error = RgbError;
+
+  fn try_from(value: &str) -> Result<Self, Self::Error> {
+    if value.chars().nth(0) != Some('#') {
+      return Err(RgbError::ConversionError("Please provide # char.".to_string()));
+    }
+
+    if value.len() != 7 {
+      return Err(RgbError::ConversionError("Please provide 6 hex digits".to_string()));
+    }
+
+    let red_value = u8::from_str_radix(&value[1..=2], 16)?;
+    let green_value = u8::from_str_radix(&value[3..=4], 16)?;
+    let blue_value = u8::from_str_radix(&value[5..=6], 16)?;
+
+    Ok(Rgb(red_value, green_value, blue_value))
+  }
+}
 
 fn main() {
     // Use `cargo test --bin a37` to test your implementation

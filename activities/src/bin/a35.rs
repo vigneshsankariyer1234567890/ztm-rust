@@ -21,22 +21,22 @@
 // * Use a single match expression utilizing guards to implement the program
 // * Run the program and print the messages with at least 4 different tiles
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum TreasureItem {
     Gold,
     SuperPower,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct TreasureChest {
     content: TreasureItem,
     amount: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Pressure(u16);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum BrickStyle {
     Dungeon,
     Gray,
@@ -54,4 +54,44 @@ enum Tile {
     Wood,
 }
 
-fn main() {}
+fn main() {
+  let tile_vec = vec![
+    Tile::Dirt,
+    Tile::Water(Pressure(9)),
+    Tile::Water(Pressure(10)),
+    Tile::Brick(BrickStyle::Dungeon),
+    Tile::Brick(BrickStyle::Gray),
+    Tile::Treasure(TreasureChest { content: TreasureItem::Gold, amount: 100 }),
+    Tile::Wood,
+  ];
+  
+  for tile in tile_vec {
+    print_tile_details(tile);
+  }
+}
+
+fn print_tile_details(tile: Tile) {
+  match tile {
+    Tile::Brick(s) => {
+      if s == BrickStyle::Dungeon {
+        println!("{:?} brick", s);
+      } else {
+        println!("The brick color is {:?}", s);
+      }
+    },
+    Tile::Water(p) => match p.0 {
+      10.. => println!("High water pressure"),
+      pressure => println!("Water pressure level: {:?}", pressure),
+    },
+    Tile::Dirt |
+    Tile::Grass |
+    Tile::Sand => println!("Ground tile"),
+    Tile::Treasure(treasure_chest) => match treasure_chest {
+      TreasureChest { 
+        amount: 100.., content: TreasureItem::Gold
+      } => println!("Lots of gold"),
+      _ => ()
+    },
+    _ => ()
+  }
+}

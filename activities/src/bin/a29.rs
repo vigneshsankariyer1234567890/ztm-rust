@@ -35,4 +35,14 @@ impl Priority for Guest {
     }
 }
 
-fn main() {}
+fn print_priority<T: Priority>(person: T) {
+  println!("This person has a priority of {:?}\n", person.get_priority());
+}
+
+fn main() {
+  let impt_guest = ImportantGuest{ };
+  let unimpt_guest = Guest{ };
+
+  print_priority(impt_guest);
+  print_priority(unimpt_guest);
+}

@@ -15,7 +15,82 @@
 // * It is not necessary to have data fields or function implementations
 //   for the vehicle bodies/colors
 
-trait Body {}
-trait Color {}
+#[derive(Debug)]
+enum BodyType {
+  Truck,
+  Car,
+  Scooter,
+}
 
-fn main() {}
+#[derive(Debug)]
+enum ColorType {
+  Red,
+  White,
+  Black
+}
+
+trait Body {
+  fn get_body_type(&self) -> BodyType;
+}
+
+struct Scooter {}
+impl Body for Scooter {
+  fn get_body_type(&self) -> BodyType {
+    BodyType::Scooter
+  }
+}
+
+struct Truck {}
+impl Body for Truck {
+  fn get_body_type(&self) -> BodyType {
+      BodyType::Truck
+  }
+}
+
+trait Color {
+  fn get_color_type(&self) -> ColorType;
+}
+struct Red {}
+impl Color for Red {
+  fn get_color_type(&self) -> ColorType {
+    ColorType::Red
+  }
+}
+struct Black{}
+impl Color for Black {
+  fn get_color_type(&self) -> ColorType {
+    ColorType::Black
+  }
+}
+
+struct Vehicle<T, U> where 
+  T: Body,
+  U: Color
+{
+  body: T,
+  color: U
+}
+
+impl <T, U> Vehicle<T, U> where
+  T: Body,
+  U: Color
+{
+  fn new(body: T, color: U) -> Self {
+    Self {
+      body,
+      color
+    }
+  }
+
+  fn get_details(&self) {
+    println!("I am a {:?}, in {:?} color", self.body.get_body_type(), self.color.get_color_type())
+  }
+}
+
+fn main() {
+  let red_scooter = Vehicle::new(Scooter{}, Red{});
+  let black_truck = Vehicle::new(Truck{}, Black{});
+
+  red_scooter.get_details();
+  black_truck.get_details();
+}
