@@ -21,8 +21,9 @@
 //   by telling the thread to self-terminate
 // * Use `cargo test --bin a39` to test your program to ensure all cases are covered
 
-use crossbeam_channel::{unbounded, Receiver};
+use crossbeam_channel::{Receiver};
 use std::thread::{self, JoinHandle};
+use colored::Colorize;
 
 enum LightMsg {
     // Add additional variants needed to complete the exercise
@@ -37,6 +38,27 @@ enum LightStatus {
 
 fn spawn_light_thread(receiver: Receiver<LightMsg>) -> JoinHandle<LightStatus> {
     // Add code here to spawn a thread to control the light bulb
+    thread::spawn(move || {
+      let mut status = LightStatus::Off;
+      while let Ok(msg) = receiver.recv() {
+        match msg {
+          LightMsg::ChangeColor(r, g, b) => {
+            let msg_to_print = format!("Changed color to rgb({},{},{})", r, g, b);
+            let colored_string = msg_to_print.truecolor(r, g, b);
+            println!("{}", colored_string);
+            println!("light bulb is on.");
+            status = LightStatus::On
+          },
+          LightMsg::Disconnect => {
+            println!("Disconnected");
+            println!("light bulb is off.");
+            status = LightStatus::Off;
+            break;
+          }
+        }
+      }
+      status
+    })
 }
 
 fn main() {}
@@ -45,6 +67,26 @@ fn main() {}
 mod test {
     use super::*;
     use crossbeam_channel::unbounded;
+
+    #[test]
+    fn light_changed_color() {
+      let (s, r) = unbounded();
+
+      let light = spawn_light_thread(r);
+
+      s.send(LightMsg::ChangeColor(62, 8, 76)).expect("channel disconnected");
+      s.send(LightMsg::ChangeColor(2, 93, 147)).expect("channel disconnected");
+      s.send(LightMsg::ChangeColor(134, 244, 238)).expect("channel disconnected");
+      s.send(LightMsg::Disconnect).expect("channel disconnected");
+
+      let light_status = light.join().expect("failed to join light thread");
+
+      if let LightStatus::On = light_status {
+        println!("on");
+      } else {
+        println!("off");
+      }
+    }
 
     #[test]
     fn light_off_when_disconnect() {
