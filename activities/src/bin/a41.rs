@@ -18,7 +18,9 @@
 //   - parking_lot
 
 use crossbeam_channel::{unbounded, Receiver, Sender};
+use parking_lot::Mutex;
 use std::collections::VecDeque;
+use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
@@ -35,6 +37,8 @@ enum Message {
     AddJob(Job),
     Quit,
 }
+
+type JobCountMutex = Arc<Mutex<u16>>;
 
 struct Worker<M> {
     tx: Sender<M>,
@@ -56,12 +60,19 @@ impl Worker<Message> {
     }
 }
 
+fn update_job_mutex(job_count_mutex: JobCountMutex) {
+  let mut count = job_count_mutex.lock();
+  *count = *count + 1;
+}
+
 /// Create a new worker to receive jobs.
-fn spawn_worker() -> Worker<Message> {
+fn spawn_worker(job_count_mutex: &JobCountMutex) -> Worker<Message> {
     let (tx, rx) = unbounded();
     // We clone the receiving end here so we have a copy to give to the
     // thread. This allows us to save the `tx` and `rx` into the Worker struct.
     let rx_thread = rx.clone();
+    // Clone the reference to JobCountMutex also
+    let mutex_clone = job_count_mutex.clone();
     // Spawn a new thread.
     let handle = thread::spawn(move || {
         // VecDeque allows us to get jobs in the order they arrive.
@@ -78,6 +89,8 @@ fn spawn_worker() -> Worker<Message> {
                         Job::Print(msg) => println!("{}", msg),
                         Job::Sum(lhs, rhs) => println!("{}+{}={}", lhs, rhs, lhs + rhs),
                     }
+                    // Job is completed here, we can increment the job counter
+                    update_job_mutex(Arc::clone(&mutex_clone));
                 }
                 // Check for messages on the channel.
                 if let Ok(msg) = rx_thread.try_recv() {
@@ -132,9 +145,10 @@ fn main() {
     let jobs_sent = jobs.len();
 
     let mut workers = vec![];
+    let count_mutex = Arc::new(Mutex::new(0));
     // Spawn 4 workers to process jobs.
     for _ in 0..4 {
-        let worker = spawn_worker();
+        let worker = spawn_worker(&count_mutex);
         workers.push(worker);
     }
 
@@ -160,4 +174,6 @@ fn main() {
     println!("Jobs sent: {}", jobs_sent);
 
     // print out the number of jobs completed here.
+    let job_completed_count = count_mutex.lock();
+    println!("Jobs completed: {}", *job_completed_count);
 }

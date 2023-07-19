@@ -21,8 +21,69 @@
 // * Test your program by changing the vehicle status from both a storefront
 //   and from corporate
 
-struct Corporate;
+use std::{rc::Rc, cell::RefCell};
 
-struct StoreFront;
+struct Corporate(Rentals);
 
-fn main() {}
+struct StoreFront(Rentals);
+
+type Rentals = Rc<RefCell<Vec<Rental>>>;
+#[derive(Debug)]
+struct Rental {
+  vehicle_type: VehicleType,
+  vin: VehicleIdentificationNumber,
+  status: VehicleStatus,
+}
+
+#[derive(Debug)]
+enum VehicleType {
+  Sedan,
+  HatchBack,
+  SUV,
+  Luxury,
+}
+
+#[derive(Debug)]
+struct VehicleIdentificationNumber(u16);
+
+#[derive(Debug)]
+enum VehicleStatus {
+  Available,
+  Unavailable,
+  Maintenance,
+  Rented
+}
+
+fn main() {
+  let rentals = Rc::new(RefCell::new(vec![
+    Rental { vehicle_type: VehicleType::HatchBack, vin: VehicleIdentificationNumber(0), status: VehicleStatus::Available},
+    Rental { vehicle_type: VehicleType::Sedan, vin: VehicleIdentificationNumber(1), status: VehicleStatus::Unavailable},
+    Rental { vehicle_type: VehicleType::SUV, vin: VehicleIdentificationNumber(2), status: VehicleStatus::Maintenance},
+    Rental { vehicle_type: VehicleType::Luxury, vin: VehicleIdentificationNumber(3), status: VehicleStatus::Rented},
+  ]));
+
+  let store_front = StoreFront(Rc::clone(&rentals));
+
+  let corporate = Corporate(Rc::clone(&rentals));
+
+  dbg!(store_front.0.borrow());
+  dbg!(corporate.0.borrow());
+
+  {
+    corporate.0.borrow_mut().push(Rental { vehicle_type: VehicleType::Luxury, vin: VehicleIdentificationNumber(4), status: VehicleStatus::Available});
+  }
+
+  dbg!(store_front.0.borrow());
+  dbg!(corporate.0.borrow());
+
+  {
+    store_front.0.borrow_mut()[0].status = VehicleStatus::Available;
+  }
+
+  dbg!(store_front.0.borrow());
+  dbg!(corporate.0.borrow());
+
+  drop(corporate);
+
+  dbg!(store_front.0.borrow());
+}
